@@ -34,14 +34,40 @@ module.exports = function() {
     }
   });
 
-  router.get('/*', async function(req, res, next) {
+  router.get('/:id', async function(req, res, next) {
+    try {
+      const profileId = parseInt(req.params.id);
+      
+      // If id is not a valid number, use default id 1
+      const id = isNaN(profileId) ? 1 : profileId;
+      
+      const profile = await Profile.findOne({ id: id });
+      
+      if (!profile) {
+        return res.status(404).render('profile_template', {
+          profile: null,
+          error: `Profile with ID ${id} not found`,
+        });
+      }
+      
+      res.render('profile_template', {
+        profile: profile,
+      });
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      next(error);
+    }
+  });
+
+  // Handle root path - redirect to profile 1 or render default
+  router.get('/', async function(req, res, next) {
     try {
       const profile = await Profile.findOne({ id: 1 });
       res.render('profile_template', {
         profile: profile,
       });
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      console.error('Error fetching default profile:', error);
       next(error);
     }
   });
