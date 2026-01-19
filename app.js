@@ -8,6 +8,10 @@ const { connectDB, disconnectDB } = require('./db');
 // set the view engine to ejs
 app.set('view engine', 'ejs');
 
+// middleware for parsing request bodies
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 // routes
 app.use('/', require('./routes/profile')());
 

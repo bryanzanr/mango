@@ -46,6 +46,36 @@ module.exports = function() {
     }
   });
 
+  router.post('/', async function(req, res, next) {
+    try {
+      const { name, description, mbti, enneagram, variant, tritype, socionics, sloan, psyche } = req.body;
+      
+      // Get the next available id
+      const lastProfile = await Profile.findOne().sort({ id: -1 });
+      const nextId = lastProfile ? lastProfile.id + 1 : 1;
+      
+      const newProfile = {
+        id: nextId,
+        name,
+        description,
+        mbti,
+        enneagram,
+        variant,
+        tritype: tritype ? parseInt(tritype) : undefined,
+        socionics,
+        sloan,
+        psyche,
+        image: "https://soulverse.boo.world/images/1.png", // Use default image for all profiles
+      };
+      
+      const createdProfile = await Profile.create(newProfile);
+      res.json({ success: true, profile: createdProfile });
+    } catch (error) {
+      console.error('Error creating profile:', error);
+      res.status(400).json({ success: false, error: error.message });
+    }
+  });
+
   return router;
 }
 
