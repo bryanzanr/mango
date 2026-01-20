@@ -17,6 +17,75 @@ The application uses:
 - **In-Memory Testing**: mongodb-memory-server for isolated testing
 - **Template Engine**: EJS for rendering profile pages
 
+## Database Architecture
+
+### Entity Relationship Diagram
+
+```
+┌─────────────────┐
+│      User       │
+├─────────────────┤
+│ _id (ObjectId)  │
+│ name (String)   │
+│ createdAt       │
+│ updatedAt       │
+└─────────────────┘
+        │
+        │ (1:Many)
+        │
+        ├───────────────────────────────┐
+        │                               │
+        ▼                               ▼
+┌──────────────────┐          ┌──────────────────┐
+│    Comment       │          │     Profile      │
+├──────────────────┤          ├──────────────────┤
+│ _id (ObjectId)   │          │ _id (ObjectId)   │
+│ profileId        ├──────────┤ id (Number)      │
+│ authorId         │ (Many:1) │ name (String)    │
+│ authorName       │          │ description      │
+│ authorAvatar     │          │ mbti             │
+│ content          │          │ enneagram        │
+│ parentCommentId  │          │ variant          │
+│ upvoteCount      │          │ tritype          │
+│ downvoteCount    │          │ socionics        │
+│ replyCount       │          │ sloan            │
+│ isEdited         │          │ psyche           │
+│ isDeleted        │          │ image            │
+│ editedAt         │          │ createdAt        │
+│ createdAt        │          │ updatedAt        │
+│ updatedAt        │          └──────────────────┘
+└──────────────────┘
+        │
+        │ (1:Many)
+        │
+        ▼
+┌──────────────────┐
+│      Vote        │
+├──────────────────┤
+│ _id (ObjectId)   │
+│ commentId        │──────┐ References Comment
+│ userId           │      │
+│ voteType (-1,1)  │      │
+│ createdAt        │      │
+└──────────────────┘      │
+                    References User via userId
+```
+
+### Relationships
+
+- **User → Comment** (1:Many) - Users can create multiple comments
+- **Profile → Comment** (1:Many) - Profiles receive multiple comments  
+- **Comment → Comment** (1:Many) - Comments can have nested replies via parentCommentId
+- **Comment → Vote** (1:Many) - Comments can have multiple votes
+- **User → Vote** (Implicit) - Users identified by userId in Vote collection
+
+### Key Design Features
+
+1. **Soft Deletes** - Comments are marked as deleted instead of removed
+2. **Nested Comments** - Support for threaded discussions via parentCommentId
+3. **Vote Aggregation** - Vote counts are denormalized in Comment for fast queries
+4. **Auto-Counters** - Reply count automatically maintained on parent comments
+
 ## Key Design Decisions
 
 1. **API-First Architecture** - All data operations go through REST API endpoints
@@ -573,6 +642,41 @@ Response (200 OK):
 - [Mongoose](https://mongoosejs.com/) - MongoDB object modeling
 - [Jest](https://jestjs.io/) - JavaScript testing framework
 - [Node.js](https://nodejs.org/) - JavaScript runtime environment
+
+## API Testing with Postman
+
+We provide a complete Postman API collection for testing all endpoints. This allows you to:
+- Test all API endpoints without writing code
+- Use pre-defined request templates
+- Store and reuse environment variables
+- Generate API documentation
+
+### Importing the Collection
+
+1. Download [mango.postman_collection.json](mango.postman_collection.json) from the repository
+2. Open Postman and click **Import** in the top-left corner
+3. Select the downloaded JSON file
+4. All endpoints will be organized by resource (Users, Profiles, Comments, Votes)
+
+### Environment Setup (Optional)
+
+Create a Postman environment with these variables:
+```
+baseUrl = http://localhost:3000
+userId = 1
+profileId = 1
+commentId = <comment_id_from_response>
+```
+
+Then select this environment before running requests - all endpoints will use these variables.
+
+### Example Workflow
+
+1. **Create a User**: POST `/users` → copy the returned `_id`
+2. **List Profiles**: GET `/profiles` → identify a profile ID
+3. **Post a Comment**: POST `/profiles/:id/comments` → copy the returned comment `_id`
+4. **Vote on Comment**: POST `/comments/:id/votes` → toggle votes
+5. **View Comment Votes**: GET `/comments/:id/votes` → see voting summary
 
 ## Authors
 
