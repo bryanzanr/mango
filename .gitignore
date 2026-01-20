@@ -1,6 +1,7 @@
 # Mac OSX AI Ignored Related Data
 .DS_Store
 screen/
+inspire/
 view_screenshots.html
 analyze_screenshots.py
 
