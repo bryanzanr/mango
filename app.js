@@ -14,6 +14,7 @@ app.use(express.json());
 
 // routes
 app.use('/', require('./routes/profile')());
+app.use('/api', require('./routes/users')());
 app.use('/api', require('./routes/comments')());
 app.use('/api', require('./routes/votes')());
 
