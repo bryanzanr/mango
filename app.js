@@ -14,6 +14,8 @@ app.use(express.json());
 
 // routes
 app.use('/', require('./routes/profile')());
+app.use('/api', require('./routes/comments')());
+app.use('/api', require('./routes/votes')());
 
 // Export app for testing
 module.exports = app;

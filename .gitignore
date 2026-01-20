@@ -1,5 +1,8 @@
-# Mac OSX Related Data
+# Mac OSX AI Ignored Related Data
 .DS_Store
+screen/
+view_screenshots.html
+analyze_screenshots.py
 
 # Logs
 logs
